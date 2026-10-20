@@ -4,7 +4,7 @@ struct ContentView: View {
     @State private var model: BillListModel
 
     init(repository: (any BillRepository)? = nil) {
-        _model = State(initialValue: BillListModel(repository: repository ?? SeededBillRepository()))
+        _model = State(initialValue: BillListModel(repository: repository ?? LocalBillRepository()))
     }
 
     var body: some View {
@@ -44,7 +44,7 @@ struct ContentView: View {
 }
 
 #Preview("Seeded bills") {
-    ContentView()
+    ContentView(repository: SeededBillRepository())
 }
 
 #Preview("Empty list") {

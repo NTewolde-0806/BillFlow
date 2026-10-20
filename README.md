@@ -66,3 +66,23 @@ Explain it back: What does `async throws` promise? Why depend on a protocol? Why
 Next: replace seeded fetching with local JSON persistence and test storage behavior.
 
 Step 3 validation: app and test targets compiled; all 7 unit tests passed on the iPhone 17 / iOS 27.0 simulator.
+
+## Step 4 — Local JSON persistence
+
+Read `Data/BillFileStore.swift`, then `Data/LocalBillRepository.swift`. The model and fetch protocol are unchanged: the screen now defaults to the local repository. Previews explicitly use fixtures so they never touch app storage.
+
+- Bills live in the app sandbox's Application Support/BillFlow/bills.json.
+- The first fetch creates directories and saves seeds only if the file is missing.
+- Subsequent loads preserve dates, IDs, paid status, and even an empty array.
+- The file-store actor serializes its own operations away from the main actor. The repository handles JSON encoding/decoding; the small demo payload is encoded on the main actor.
+- Atomic writes replace the complete file. This is a single-app demo, not a database or cross-process transaction system.
+- A corrupt file or other storage error propagates to the existing error screen. Retry does not erase or repair the data.
+- `saveBills` is ready for the later payment/edit flow. The UI is still read-only.
+
+Run the app twice to confirm due dates persist. The four storage tests use unique temporary folders and remove them afterward; they never access the app's real data. For a fresh demo, uninstall the simulator app, which removes its sandbox.
+
+Explain it back: Why distinguish a missing file from an empty list? What does an atomic write protect against? Why put disk access in an actor? Why should a decode failure not trigger reseeding?
+
+Next: simulated async payments and saving their results, with failure-path tests.
+
+Step 4 validation: app/test targets compiled; all 11 unit tests passed on iPhone 17 / iOS 27.0, including four persistence tests.
