@@ -33,7 +33,7 @@ Start with folders for separation of responsibilities; extract packages when a c
 
 ## Step 2 — Seeded SwiftUI list
 
-`ContentView` accepts bills and a reference date. Its default initializer supplies demo data; `ContentView(bills: [])` demonstrates the empty state. `List` uses each bill's stable ID to track rows.
+In step 2, `ContentView` accepted bills and a reference date directly. Step 3 replaces that initializer with repository injection; the empty preview now supplies a repository returning no bills. `List` uses each bill's stable ID to track rows.
 
 `BillRow` only presents a bill. Decimal currency formatting converts integer cents into a localized USD amount. Status includes a text label as well as color, and the vertical layout accommodates larger text. VoiceOver reads each row as a combined element.
 
@@ -48,3 +48,21 @@ Next: introduce observable state and an async repository, then show loading and 
 Create a feature branch from main before starting each step. Commit a completed step after appropriate verification, noting any checks that could not run. Merge to main only after we agree the step is stable. Push or open a pull request when requested.
 
 `BillRow.swift` includes previews for all three statuses and accessibility text size.
+
+## Step 3 — Observable state and async loading
+
+Read `Data/BillRepository.swift`, `BillListModel.swift`, then `ContentView.swift`.
+
+- The repository protocol defines an async, throwing fetch operation. Today's implementation returns seeds after a short simulated delay; a later implementation will read local storage.
+- The main-actor observable model owns an enum: idle, loading, loaded, or failed. An enum prevents contradictory combinations such as loading and failed at once.
+- `@State` preserves the model across SwiftUI view updates. The view renders the current state.
+- `.task` starts loading when the screen appears and participates in SwiftUI cancellation. Cancellation returns to idle instead of showing a failure.
+- Retry calls the same load method. A guard avoids overlapping fetches.
+
+Build with Cmd+B and run BillFlowTests with Cmd+U. Run the app to see the brief loading indicator and populated list. Use the empty and error previews to inspect those states. The error preview intentionally keeps failing when retried; the retry unit test uses a repository that recovers.
+
+Explain it back: What does `async throws` promise? Why depend on a protocol? Why does the UI model use the main actor? How does an enum simplify screen state?
+
+Next: replace seeded fetching with local JSON persistence and test storage behavior.
+
+Step 3 validation: app and test targets compiled; all 7 unit tests passed on the iPhone 17 / iOS 27.0 simulator.

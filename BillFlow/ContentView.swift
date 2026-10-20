@@ -1,31 +1,45 @@
 import SwiftUI
 
 struct ContentView: View {
-    let bills: [Bill]
-    let referenceDate: Date
+    @State private var model: BillListModel
 
-    init(bills: [Bill]? = nil, referenceDate: Date = .now) {
-        self.referenceDate = referenceDate
-        self.bills = bills ?? BillSeed.makeBills(relativeTo: referenceDate)
+    init(repository: (any BillRepository)? = nil) {
+        _model = State(initialValue: BillListModel(repository: repository ?? SeededBillRepository()))
     }
 
     var body: some View {
         NavigationStack {
             Group {
-                if bills.isEmpty {
-                    ContentUnavailableView(
-                        "No bills yet",
-                        systemImage: "doc.text",
-                        description: Text("Your bills will appear here.")
-                    )
-                } else {
-                    List(bills) { bill in
-                        BillRow(bill: bill, referenceDate: referenceDate)
+                switch model.state {
+                case .idle, .loading:
+                    ProgressView("Loading bills…")
+                case .failed:
+                    ContentUnavailableView {
+                        Label("Couldn't load bills", systemImage: "exclamationmark.triangle")
+                    } description: {
+                        Text("Please try again.")
+                    } actions: {
+                        Button("Retry") {
+                            Task { await model.load() }
+                        }
+                    }
+                case .loaded(let bills):
+                    if bills.isEmpty {
+                        ContentUnavailableView(
+                            "No bills yet",
+                            systemImage: "doc.text",
+                            description: Text("Your bills will appear here.")
+                        )
+                    } else {
+                        List(bills) { bill in
+                            BillRow(bill: bill, referenceDate: .now)
+                        }
                     }
                 }
             }
             .navigationTitle("BillFlow")
         }
+        .task { await model.load() }
     }
 }
 
@@ -34,5 +48,20 @@ struct ContentView: View {
 }
 
 #Preview("Empty list") {
-    ContentView(bills: [])
+    ContentView(repository: PreviewBillRepository(bills: []))
+}
+
+#Preview("Loading error") {
+    ContentView(repository: PreviewBillRepository(bills: nil))
+}
+
+private struct PreviewBillRepository: BillRepository {
+    let bills: [Bill]?
+
+    func fetchBills() async throws -> [Bill] {
+        guard let bills else { throw PreviewError.unavailable }
+        return bills
+    }
+
+    enum PreviewError: Error { case unavailable }
 }
