@@ -1,0 +1,38 @@
+name: iOS build and tests
+
+on:
+  push:
+    branches: [main, 'feature/**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    runs-on: xcode-27
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.1.app/Contents/Developer
+      RESULT_BUNDLE_PATH: .build/TestResults.xcresult
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Build and run unit tests
+        run: bash scripts/test.sh
+      - name: Upload Xcode test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xcode-test-results
+          path: .build/TestResults.xcresult
+          retention-days: 7
+          if-no-files-found: warn
