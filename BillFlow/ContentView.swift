@@ -3,8 +3,8 @@ import SwiftUI
 struct ContentView: View {
     @State private var model: BillListModel
 
-    init(repository: (any BillRepository)? = nil) {
-        _model = State(initialValue: BillListModel(repository: repository ?? LocalBillRepository()))
+    init(repository: (any BillRepository)? = nil, paymentService: (any PaymentService)? = nil) {
+        _model = State(initialValue: BillListModel(repository: repository ?? LocalBillRepository(), paymentService: paymentService))
     }
 
     var body: some View {
@@ -32,7 +32,21 @@ struct ContentView: View {
                         )
                     } else {
                         List(bills) { bill in
-                            BillRow(bill: bill, referenceDate: .now)
+                            VStack(alignment: .leading, spacing: 8) {
+                                BillRow(bill: bill, referenceDate: .now)
+                                if !bill.isPaid {
+                                    if model.paymentState == .processing(bill.id) {
+                                        ProgressView("Simulating payment…")
+                                    } else {
+                                        Button("Pay (demo)") {
+                                            Task { await model.pay(billID: bill.id) }
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .disabled(model.isPaying)
+                                        .accessibilityLabel("Simulate payment for \(bill.name)")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -40,6 +54,14 @@ struct ContentView: View {
             .navigationTitle("BillFlow")
         }
         .task { await model.load() }
+        .alert("Payment update", isPresented: Binding(
+            get: { if case .failed = model.paymentState { return true }; return false },
+            set: { if !$0 { model.dismissPaymentError() } }
+        )) {
+            Button("OK") { model.dismissPaymentError() }
+        } message: {
+            if case .failed(let message) = model.paymentState { Text(message) }
+        }
     }
 }
 
@@ -55,8 +77,12 @@ struct ContentView: View {
     ContentView(repository: PreviewBillRepository(bills: nil))
 }
 
-private struct PreviewBillRepository: BillRepository {
-    let bills: [Bill]?
+private final class PreviewBillRepository: BillRepository {
+    var bills: [Bill]?
+
+    init(bills: [Bill]?) { self.bills = bills }
+
+    func saveBills(_ bills: [Bill]) async throws { self.bills = bills }
 
     func fetchBills() async throws -> [Bill] {
         guard let bills else { throw PreviewError.unavailable }
@@ -64,4 +90,9 @@ private struct PreviewBillRepository: BillRepository {
     }
 
     enum PreviewError: Error { case unavailable }
+}
+
+#Preview("Payment failure") {
+    ContentView(repository: SeededBillRepository(),
+                paymentService: SimulatedPaymentService(shouldFail: true))
 }

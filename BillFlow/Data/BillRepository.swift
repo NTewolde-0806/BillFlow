@@ -1,15 +1,25 @@
 import Foundation
 
-/// The screen asks for bills without knowing how they are stored.
+/// Defines data access independently of storage details.
 @MainActor
 protocol BillRepository {
     func fetchBills() async throws -> [Bill]
+    func saveBills(_ bills: [Bill]) async throws
 }
 
-struct SeededBillRepository: BillRepository {
+/// In-memory fixture storage for previews. Never writes to disk.
+final class SeededBillRepository: BillRepository {
+    private var bills: [Bill]?
+
     func fetchBills() async throws -> [Bill] {
-        // A brief simulated delay makes the loading state visible in this demo.
         try await Task.sleep(for: .milliseconds(300))
-        return BillSeed.makeBills(relativeTo: .now)
+        if let bills { return bills }
+        let seeds = BillSeed.makeBills(relativeTo: .now)
+        bills = seeds
+        return seeds
+    }
+
+    func saveBills(_ bills: [Bill]) async throws {
+        self.bills = bills
     }
 }

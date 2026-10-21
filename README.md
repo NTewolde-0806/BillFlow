@@ -86,3 +86,21 @@ Explain it back: Why distinguish a missing file from an empty list? What does an
 Next: simulated async payments and saving their results, with failure-path tests.
 
 Step 4 validation: app/test targets compiled; all 11 unit tests passed on iPhone 17 / iOS 27.0, including four persistence tests.
+
+## Step 5 — Simulated payments
+
+Read `Payments/PaymentService.swift`, then `BillListModel.pay(billID:)`, then the Pay button in `ContentView`.
+
+The service simulates a delay and either succeeds or throws; it never sends money. The model guards against duplicate requests, already-paid bills, and unknown IDs. It keeps the loaded list visible while one payment runs and blocks reloads until it finishes.
+
+After simulation succeeds, the model saves a modified copy of the bill list. It publishes that copy only after saving succeeds. Payment failure and save failure show different messages; both leave the visible bill unpaid. A successful save removes the Pay button and survives relaunch. This demonstration is not a real payment transaction system; a real gateway would require durable receipts, idempotency, and reconciliation when payment succeeds but local saving fails.
+
+`BillRepository` now includes saving. The seeded repository stores changes in memory for interactive previews; the local repository writes JSON. The payment-failure preview deliberately fails every payment. Cancellation before simulation completes leaves bills unchanged; cancellation/error while saving is reported because the outcome needs attention.
+
+Manual check: pay Electricity, observe progress and Paid status, then relaunch to verify persistence. In the Payment failure preview, tap Pay and confirm the failure alert leaves the bill unpaid. Check larger text and VoiceOver; the Pay button identifies its bill.
+
+Explain it back: Why save before publishing Paid? Why guard payment calls in the model as well as disable buttons? Why are payment and storage separate dependencies? What extra problem would a real payment gateway introduce if saving failed?
+
+Next: local reminder permission handling and scheduling through a testable abstraction.
+
+Step 5 validation (October 21, 2026): app/test targets compiled; all 18 unit tests passed on iPhone 17 / iOS 27.0. The first test launch timed out; the retry after simulator startup passed. Manual visual and VoiceOver checks remain.

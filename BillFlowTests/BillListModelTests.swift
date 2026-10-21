@@ -44,6 +44,8 @@ struct BillListModelTests {
 
         init(result: Result<[Bill], Error>) { self.result = result }
 
+        func saveBills(_ bills: [Bill]) async throws { result = .success(bills) }
+
         func fetchBills() async throws -> [Bill] {
             onFetch?()
             return try result.get()

@@ -16,7 +16,7 @@ struct LocalBillRepository: BillRepository {
         return try JSONDecoder().decode([Bill].self, from: data)
     }
 
-    /// Used by future editing/payment flows; fetch-only consumers keep the smaller protocol.
+    /// Saves the complete updated list after a simulated payment.
     func saveBills(_ bills: [Bill]) async throws {
         let data = try JSONEncoder().encode(bills)
         try await store.write(data)
