@@ -2,9 +2,10 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var model: BillListModel
+    @State private var reminderBill: Bill?
 
-    init(repository: (any BillRepository)? = nil, paymentService: (any PaymentService)? = nil) {
-        _model = State(initialValue: BillListModel(repository: repository ?? LocalBillRepository(), paymentService: paymentService))
+    init(reminderScheduler: (any BillReminderScheduler)? = nil, repository: (any BillRepository)? = nil, paymentService: (any PaymentService)? = nil) {
+        _model = State(initialValue: BillListModel(reminderScheduler: reminderScheduler, repository: repository ?? LocalBillRepository(), paymentService: paymentService))
     }
 
     var body: some View {
@@ -42,8 +43,15 @@ struct ContentView: View {
                                             Task { await model.pay(billID: bill.id) }
                                         }
                                         .buttonStyle(.bordered)
-                                        .disabled(model.isPaying)
+                                        .disabled(model.isPaying || model.isSchedulingReminder)
                                         .accessibilityLabel("Simulate payment for \(bill.name)")
+                                        Button("Remind me…") {
+                                            model.clearReminderMessage()
+                                            reminderBill = bill
+                                        }
+                                        .buttonStyle(.bordered)
+                                        .disabled(model.isPaying || model.isSchedulingReminder)
+                                        .accessibilityLabel("Set reminder for \(bill.name)")
                                     }
                                 }
                             }
@@ -54,6 +62,9 @@ struct ContentView: View {
             .navigationTitle("BillFlow")
         }
         .task { await model.load() }
+        .sheet(item: $reminderBill) { bill in
+            BillReminderView(bill: bill, model: model)
+        }
         .alert("Payment update", isPresented: Binding(
             get: { if case .failed = model.paymentState { return true }; return false },
             set: { if !$0 { model.dismissPaymentError() } }
@@ -66,15 +77,15 @@ struct ContentView: View {
 }
 
 #Preview("Seeded bills") {
-    ContentView(repository: SeededBillRepository())
+    ContentView(reminderScheduler: PreviewBillReminderScheduler(), repository: SeededBillRepository())
 }
 
 #Preview("Empty list") {
-    ContentView(repository: PreviewBillRepository(bills: []))
+    ContentView(reminderScheduler: PreviewBillReminderScheduler(), repository: PreviewBillRepository(bills: []))
 }
 
 #Preview("Loading error") {
-    ContentView(repository: PreviewBillRepository(bills: nil))
+    ContentView(reminderScheduler: PreviewBillReminderScheduler(), repository: PreviewBillRepository(bills: nil))
 }
 
 private final class PreviewBillRepository: BillRepository {
@@ -93,6 +104,6 @@ private final class PreviewBillRepository: BillRepository {
 }
 
 #Preview("Payment failure") {
-    ContentView(repository: SeededBillRepository(),
+    ContentView(reminderScheduler: PreviewBillReminderScheduler(), repository: SeededBillRepository(),
                 paymentService: SimulatedPaymentService(shouldFail: true))
 }

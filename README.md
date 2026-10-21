@@ -104,3 +104,23 @@ Explain it back: Why save before publishing Paid? Why guard payment calls in the
 Next: local reminder permission handling and scheduling through a testable abstraction.
 
 Step 5 validation (October 21, 2026): app/test targets compiled; all 18 unit tests passed on iPhone 17 / iOS 27.0. The first test launch timed out; the retry after simulator startup passed. Manual visual and VoiceOver checks remain.
+
+## Step 6 — Local reminders
+
+Read `Reminders/BillReminderScheduler.swift`, `BillListModel.scheduleReminder`, then `Reminders/BillReminderView.swift`.
+
+Tap Remind me on an unpaid bill, choose a future date/time, then Schedule reminder. Only this explicit action requests notification permission. The sheet reports success, permission denial with Settings guidance, or failure. Paid bills have no reminder control. Scheduling and payment cannot run concurrently.
+
+The system scheduler uses UserNotifications and a nonrepeating calendar trigger. The bill UUID forms a stable notification identifier, so scheduling again replaces that bill's pending request. After a payment is saved, its pending and delivered reminders are removed. A failed payment/save leaves the reminder in place. Bill JSON remains focused on bill data; the OS stores pending reminder requests. This step does not display a persistent reminder toggle or list of pending reminders.
+
+Manual device/simulator checks: choose a minute ahead, grant permission, tap Done, then background the app and wait. Foreground banners are not enabled in this step. Try denying permission and check Settings guidance. Schedule a reminder, pay the bill before it fires, and verify no notification arrives. Focus and notification settings may affect presentation. Re-schedule the same bill to check it replaces rather than duplicates the pending request. Previews use an in-memory scheduler and never prompt.
+
+Tests use a scheduler stub: permission grant/denial/error, future-date validation, schedule failure/retry, paid/unknown bills, cancellation, concurrency guards, and cancellation only after payment is saved. System delivery still requires the manual checks above.
+
+Explain it back: Why request permission when scheduling rather than on launch? Why use the bill ID for the notification request? Why cancel only after saving payment? Why is a stub useful even though it cannot prove iOS delivers a notification?
+
+Next: CI build/tests and portfolio documentation, followed by a stable-branch review.
+
+Apple reference: https://developer.apple.com/documentation/usernotifications/scheduling-a-notification-locally-from-your-app
+
+Step 6 validation: app/test targets compiled; all 27 unit tests passed on iPhone 17 / iOS 27.0. System permission/delivery, Focus behavior and VoiceOver still require manual verification.

@@ -7,7 +7,7 @@ struct BillPaymentTests {
     @Test func successfulPaymentSavesBeforeUpdatingTheList() async throws {
         let repository = RepositoryStub()
         let service = PaymentStub()
-        let model = BillListModel(repository: repository, paymentService: service)
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: repository, paymentService: service)
         await model.load()
         let original = repository.bills
         repository.onSave = {
@@ -26,7 +26,7 @@ struct BillPaymentTests {
         let repository = RepositoryStub()
         let service = PaymentStub()
         service.error = TestError.failed
-        let model = BillListModel(repository: repository, paymentService: service)
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: repository, paymentService: service)
         await model.load()
         await model.pay(billID: repository.bills[0].id)
         #expect(repository.saveCalls == 0)
@@ -44,7 +44,7 @@ struct BillPaymentTests {
     @Test func saveFailureDoesNotClaimTheBillIsPaid() async {
         let repository = RepositoryStub()
         repository.saveError = TestError.failed
-        let model = BillListModel(repository: repository, paymentService: PaymentStub())
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: repository, paymentService: PaymentStub())
         await model.load()
         let original = repository.bills
         await model.pay(billID: original[0].id)
@@ -60,7 +60,7 @@ struct BillPaymentTests {
     @Test func paidAndUnknownBillsDoNotReachThePaymentService() async {
         let repository = RepositoryStub()
         let service = PaymentStub()
-        let model = BillListModel(repository: repository, paymentService: service)
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: repository, paymentService: service)
         await model.load()
         await model.pay(billID: repository.bills[2].id)
         await model.pay(billID: UUID())
@@ -71,7 +71,7 @@ struct BillPaymentTests {
     @Test func inFlightPaymentBlocksOtherPaymentsAndReloads() async {
         let repository = RepositoryStub()
         let service = PaymentStub()
-        let model = BillListModel(repository: repository, paymentService: service)
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: repository, paymentService: service)
         await model.load()
         service.onPay = {
             #expect(model.paymentState == .processing(repository.bills[0].id))
@@ -89,7 +89,7 @@ struct BillPaymentTests {
         let repository = RepositoryStub()
         let service = PaymentStub()
         service.error = CancellationError()
-        let model = BillListModel(repository: repository, paymentService: service)
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: repository, paymentService: service)
         await model.load()
         await model.pay(billID: repository.bills[0].id)
         #expect(repository.saveCalls == 0)
@@ -102,7 +102,7 @@ struct BillPaymentTests {
             .appendingPathComponent("BillFlowPaymentTests-\(UUID().uuidString)")
         defer { try? FileManager.default.removeItem(at: folder) }
         let file = folder.appendingPathComponent("bills.json")
-        let model = BillListModel(repository: LocalBillRepository(fileURL: file),
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: LocalBillRepository(fileURL: file),
                                   paymentService: PaymentStub())
         await model.load()
         guard case .loaded(let bills) = model.state else {

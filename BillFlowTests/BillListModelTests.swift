@@ -7,7 +7,7 @@ struct BillListModelTests {
     @Test func successfulLoadReplacesIdleWithBills() async {
         let bills = BillSeed.makeBills(relativeTo: .now)
         let repository = StubRepository(result: .success(bills))
-        let model = BillListModel(repository: repository)
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: repository)
         #expect(model.state == .idle)
         repository.onFetch = { #expect(model.state == .loading) }
         await model.load()
@@ -15,14 +15,14 @@ struct BillListModelTests {
     }
 
     @Test func emptyResultIsAValidLoadedState() async {
-        let model = BillListModel(repository: StubRepository(result: .success([])))
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: StubRepository(result: .success([])))
         await model.load()
         #expect(model.state == .loaded([]))
     }
 
     @Test func failureCanBeRetried() async {
         let repository = StubRepository(result: .failure(TestError.unavailable))
-        let model = BillListModel(repository: repository)
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: repository)
         await model.load()
         #expect(model.state == .failed)
         repository.result = .success([])
@@ -31,7 +31,7 @@ struct BillListModelTests {
     }
 
     @Test func cancellationDoesNotShowAnError() async {
-        let model = BillListModel(repository: StubRepository(result: .failure(CancellationError())))
+        let model = BillListModel(reminderScheduler: PreviewBillReminderScheduler(), repository: StubRepository(result: .failure(CancellationError())))
         await model.load()
         #expect(model.state == .idle)
     }
