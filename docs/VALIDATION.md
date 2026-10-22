@@ -2,7 +2,7 @@
 
 ## Automated baseline
 
-On October 21, 2026, the exact CI script (`bash scripts/test.sh`) built the app and passed all 27 unit tests on iPhone 17 / iOS 27.0 with Xcode 27.1. Automatic simulator selection and the committed shared scheme were exercised. Workflow YAML parsed, shell syntax and scheme XML validated, and git diff checks passed. GitHub-hosted execution remains pending until push.
+On October 21, 2026, the exact CI script (`bash scripts/test.sh`) built the app and passed all 27 unit tests on iPhone 17 / iOS 27.0 with Xcode 27.1. Automatic simulator selection and the committed shared scheme were exercised. Workflow YAML parsed, shell syntax and scheme XML validated, and git diff checks passed. GitHub-hosted CI passed on October 22 for commit `fbc8a14`: [successful run](https://github.com/NTewolde-0806/BillFlow/actions/runs/39836160109).
 
 ## Manual checks — results and remaining checks
 
@@ -35,4 +35,6 @@ Review the final diff and automated results, complete the manual checks, then ag
 - Native UI automation timed out or took several minutes per observation. The user subsequently confirmed payment persistence after relaunch, background reminder delivery, and larger-text behavior. VoiceOver was explicitly not tested; other unchecked scenarios above remain unverified.
 - No merge to main has been performed.
 
-The latest push retry failed with “Invalid username or token.” GitHub credentials must be corrected locally before pushing and validating hosted CI.
+The credential errors described above were resolved by the user pushing from Terminal. The branch now tracks origin/feature/ci-and-documentation. Hosted build/tests and artifact upload passed for `fbc8a14`.
+
+After the ChatGPT restart, native app inventory, Xcode accessibility inspection and Device Hub screenshots succeeded promptly. Screenshot access is verified. This does not establish VoiceOver behavior inside BillFlow.

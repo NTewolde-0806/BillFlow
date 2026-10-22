@@ -54,7 +54,7 @@ These are folder boundaries in one app target, not separate Swift packages. Pack
 
 The 27 unit tests cover domain rules, loading and retry, persistence, payment sequencing/failure, and reminder permission/scheduling behavior. Storage tests use temporary folders; model tests use injected stubs.
 
-The GitHub Actions workflow builds and runs the same script on feature-branch pushes and pull requests to main. It selects Xcode 27.1 on the `xcode-27` runner and uploads `.xcresult` diagnostics even after a test failure. No release signing or deployment occurs. Hosted execution is unverified until this branch is pushed and the workflow runs.
+The GitHub Actions workflow builds and runs the same script on feature-branch pushes and pull requests to main. It selects Xcode 27.1 on the `xcode-27` runner and uploads `.xcresult` diagnostics even after a test failure. No release signing or deployment occurs. Hosted build/tests and result upload [passed for commit fbc8a14](https://github.com/NTewolde-0806/BillFlow/actions/runs/39836160109). See the validation record for remaining manual checks.
 
 The shared scheme deliberately runs unit tests only. `BillFlowUITests` still contains Xcode starter templates; it is not evidence of UI coverage. Permission prompts, notification delivery, VoiceOver and visual behavior require the [manual checks](docs/VALIDATION.md).
 
