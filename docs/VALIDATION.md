@@ -16,7 +16,7 @@ On October 21, 2026, the exact CI script (`bash scripts/test.sh`) built the app 
 - [ ] Denying permission shows Settings guidance and schedules nothing.
 - [x] A scheduled reminder arrives while the app is in the background (user verified October 22).
 - [ ] Rescheduling a bill produces one pending reminder, not duplicates.
-- [ ] Paying before a reminder fires cancels it.
+- [x] Scheduled Electricity reminder, paid before the deadline, backgrounded the app, and observed no reminder after the scheduled minute (simulator October 22; not a direct inspection of the OS pending-request store).
 - [ ] Reminder-sheet date selection, progress and messages work with VoiceOver and large text.
 
 ## CI explanation checkpoint
@@ -40,3 +40,5 @@ The credential errors described above were resolved by the user pushing from Ter
 After the ChatGPT restart, native app inventory, Xcode accessibility inspection and Device Hub screenshots succeeded promptly. Screenshot access is verified. This does not establish VoiceOver behavior inside BillFlow.
 
 Simulator inspection after restart: the accessibility tree exposes combined bill details and bill-specific action labels. The reminder sheet exposes date/time controls, Schedule, Done and the successful scheduling message. These checks verify exposed semantics and a scheduling result, not spoken VoiceOver navigation. No additional notification delivery or cancellation scenario is claimed.
+
+Additional October 22 validation: hosted CI [passed for dd5c326](https://github.com/NTewolde-0806/BillFlow/actions/runs/39838176748). The simulator cancellation scenario changed Electricity to Paid; all three saved demo bills are now paid. Fresh data is needed for further unpaid-bill reminder checks; no data reset was performed. Permission-denial, duplicate-rescheduling, fresh-install, preview and spoken VoiceOver checks remain pending.
