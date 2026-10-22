@@ -42,3 +42,13 @@ After the ChatGPT restart, native app inventory, Xcode accessibility inspection 
 Simulator inspection after restart: the accessibility tree exposes combined bill details and bill-specific action labels. The reminder sheet exposes date/time controls, Schedule, Done and the successful scheduling message. These checks verify exposed semantics and a scheduling result, not spoken VoiceOver navigation. No additional notification delivery or cancellation scenario is claimed.
 
 Additional October 22 validation: hosted CI [passed for dd5c326](https://github.com/NTewolde-0806/BillFlow/actions/runs/39838176748). The simulator cancellation scenario changed Electricity to Paid; all three saved demo bills are now paid. Fresh data is needed for further unpaid-bill reminder checks; no data reset was performed. Permission-denial, duplicate-rescheduling, fresh-install, preview and spoken VoiceOver checks remain pending.
+
+## Pre-merge code review — October 22
+
+Reviewed the domain and fixtures, observable loading/payment/reminder state, repository and file-store boundaries, notification adapter, screen/row/reminder views, unit tests, shared scheme, test script, CI workflow and README. No additional blocking defect was identified in the reviewed demo flows. This is a static review result, not proof of unexercised UI or OS behavior.
+
+Confirmed by source/test inspection: empty saved data is not reseeded; corrupt files are preserved; payment state is published after saving; duplicate concurrent actions are guarded; permission denial has Settings guidance; notification requests use stable bill identifiers. The 27 unit tests and successful hosted CI remain the automated evidence. Notification adapter delivery, actual permission denial and duplicate pending requests still require their manual checks.
+
+The separate iPhone 17e live display timed out (DeviceKit error 4002), so it did not establish a fresh-install or denied-permission result. The ContentView preview canvas was refreshed but stalled preparing its simulator and the UI connection timed out. Empty/error preview checks remain pending rather than being inferred from the model tests.
+
+The user is updating their physical iPhone before building for spoken VoiceOver checks. Local project signing settings are user work in progress and were not staged in this documentation update. Existing simulator bill data was not reset. Main remains unchanged; merge readiness is deferred until outstanding validation is resolved or explicitly accepted.
