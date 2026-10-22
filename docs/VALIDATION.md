@@ -11,13 +11,14 @@ On October 21, 2026, the exact CI script (`bash scripts/test.sh`) built the app 
 - [x] Paid bills have no Pay or reminder controls (observed Internet and Rent in simulator October 22).
 - [ ] Empty and error previews render correctly; retry leaves a usable screen.
 - [x] Larger-text check passed (user verified October 22).
-- [ ] VoiceOver reads the name, amount, date and status clearly and identifies each Pay/reminder button.
+- [x] VoiceOver reads all elements clearly, including bill and reminder controls (user verified on physical iPhone October 22).
 - [ ] Reminder permission is requested on scheduling, never on launch.
-- [ ] Denying permission shows Settings guidance and schedules nothing.
+- [x] Permission-denial scenario passed on physical iPhone (user verified October 22).
 - [x] A scheduled reminder arrives while the app is in the background (user verified October 22).
-- [ ] Rescheduling a bill produces one pending reminder, not duplicates.
+- [x] Rescheduling scenario passed: only the later reminder arrives (user verified on physical iPhone October 22).
 - [x] Scheduled Electricity reminder, paid before the deadline, backgrounded the app, and observed no reminder after the scheduled minute (simulator October 22; not a direct inspection of the OS pending-request store).
-- [ ] Reminder-sheet date selection, progress and messages work with VoiceOver and large text.
+- [x] Reminder-sheet controls and messages have clear VoiceOver speech (user verified October 22).
+- [ ] Reminder-sheet date selection, progress and messages fit at large text sizes.
 
 ## CI explanation checkpoint
 
@@ -52,3 +53,9 @@ Confirmed by source/test inspection: empty saved data is not reseeded; corrupt f
 The separate iPhone 17e live display timed out (DeviceKit error 4002), so it did not establish a fresh-install or denied-permission result. The ContentView preview canvas was refreshed but stalled preparing its simulator and the UI connection timed out. Empty/error preview checks remain pending rather than being inferred from the model tests.
 
 The user is updating their physical iPhone before building for spoken VoiceOver checks. Local project signing settings are user work in progress and were not staged in this documentation update. Existing simulator bill data was not reset. Main remains unchanged; merge readiness is deferred until outstanding validation is resolved or explicitly accepted.
+
+## Physical-device validation — October 22
+
+After updating the phone and running BillFlow on it, the user reported successful permission-denial and rescheduling scenarios and confirmed that all elements were spoken clearly by VoiceOver. These user-observed results complete the corresponding checks above. They do not independently establish an OS pending-request count.
+
+Remaining unchecked items are fresh-install fixture appearance, empty/error preview rendering and visible retry behavior, no permission prompt on launch, and the reminder sheet at large text sizes. These have not been silently treated as passed. The personal development-team setting is preserved locally and excluded from this documentation commit.
