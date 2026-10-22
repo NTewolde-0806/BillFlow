@@ -8,7 +8,7 @@ On October 21, 2026, the exact CI script (`bash scripts/test.sh`) built the app 
 
 - [ ] Fresh install shows expected names, amounts, dates and statuses.
 - [x] Paid status survives relaunch (user verified October 22).
-- [ ] A paid bill has no Pay or reminder control.
+- [x] Paid bills have no Pay or reminder controls (observed Internet and Rent in simulator October 22).
 - [ ] Empty and error previews render correctly; retry leaves a usable screen.
 - [x] Larger-text check passed (user verified October 22).
 - [ ] VoiceOver reads the name, amount, date and status clearly and identifies each Pay/reminder button.
@@ -38,3 +38,5 @@ Review the final diff and automated results, complete the manual checks, then ag
 The credential errors described above were resolved by the user pushing from Terminal. The branch now tracks origin/feature/ci-and-documentation. Hosted build/tests and artifact upload passed for `fbc8a14`.
 
 After the ChatGPT restart, native app inventory, Xcode accessibility inspection and Device Hub screenshots succeeded promptly. Screenshot access is verified. This does not establish VoiceOver behavior inside BillFlow.
+
+Simulator inspection after restart: the accessibility tree exposes combined bill details and bill-specific action labels. The reminder sheet exposes date/time controls, Schedule, Done and the successful scheduling message. These checks verify exposed semantics and a scheduling result, not spoken VoiceOver navigation. No additional notification delivery or cancellation scenario is claimed.
