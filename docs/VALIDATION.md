@@ -6,19 +6,19 @@ On October 21, 2026, the exact CI script (`bash scripts/test.sh`) built the app 
 
 ## Manual checks — results and remaining checks
 
-- [ ] Fresh install shows expected names, amounts, dates and statuses.
+- [x] Fresh-install bill details passed (user verified on iPhone 17e October 23); seeded names, amounts and statuses also observed directly by the assistant.
 - [x] Paid status survives relaunch (user verified October 22).
 - [x] Paid bills have no Pay or reminder controls (observed Internet and Rent in simulator October 22).
-- [ ] Empty and error previews render correctly; retry leaves a usable screen.
+- [x] Empty and error previews, including visible Retry behavior, passed (user verified October 23). The error fixture intentionally keeps failing; recovery is separately unit-tested.
 - [x] Larger-text check passed (user verified October 22).
 - [x] VoiceOver reads all elements clearly, including bill and reminder controls (user verified on physical iPhone October 22).
-- [ ] Reminder permission is requested on scheduling, never on launch.
+- [x] No notification prompt on fresh launch (user verified October 23); explicit scheduling permission behavior verified in the physical-device checks.
 - [x] Permission-denial scenario passed on physical iPhone (user verified October 22).
 - [x] A scheduled reminder arrives while the app is in the background (user verified October 22).
 - [x] Rescheduling scenario passed: only the later reminder arrives (user verified on physical iPhone October 22).
 - [x] Scheduled Electricity reminder, paid before the deadline, backgrounded the app, and observed no reminder after the scheduled minute (simulator October 22; not a direct inspection of the OS pending-request store).
 - [x] Reminder-sheet controls and messages have clear VoiceOver speech (user verified October 22).
-- [ ] Reminder-sheet date selection, progress and messages fit at large text sizes.
+- [x] Reminder-sheet date selection, progress and messages fit at maximum accessibility text size (user verified October 23).
 
 ## CI explanation checkpoint
 
@@ -59,3 +59,11 @@ The user is updating their physical iPhone before building for spoken VoiceOver 
 After updating the phone and running BillFlow on it, the user reported successful permission-denial and rescheduling scenarios and confirmed that all elements were spoken clearly by VoiceOver. These user-observed results complete the corresponding checks above. They do not independently establish an OS pending-request count.
 
 Remaining unchecked items are fresh-install fixture appearance, empty/error preview rendering and visible retry behavior, no permission prompt on launch, and the reminder sheet at large text sizes. These have not been silently treated as passed. The personal development-team setting is preserved locally and excluded from this documentation commit.
+
+## Final validation — October 23
+
+The user reported that all remaining checks passed on iPhone 17e: fresh-install appearance with no launch-time permission prompt, empty/error previews and Retry behavior, and the reminder sheet at maximum accessibility text size. The assistant directly observed the seeded bill list with expected names, amounts and Overdue/Upcoming/Paid statuses. The subsequent reminder-sheet retest hit a Computer Use timeout, so the other visual passes are explicitly user-verified, not independently repeated by the assistant.
+
+All agreed manual checklist items now have passing evidence. No app source changed during this final validation. The latest verified hosted baseline before this documentation update is [eea8d0c](https://github.com/NTewolde-0806/BillFlow/actions/runs/39858249884). The documentation update will trigger a fresh CI run. The pre-merge code review found no additional blocking issues within the documented demo scope.
+
+Ready for the final merge decision once the latest CI is green. No merge has been performed. The personal development-team settings remain uncommitted local changes and are excluded from the feature commits.
